@@ -1,13 +1,46 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import { WeatherProvider } from '../context/WeatherContext';
+import SearchInput from '../components/SearchInput';
+import WeatherDisplay from '../components/WeatherDisplay';
+import ErrorDisplay from '../components/ErrorDisplay';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { useWeather } from '../context/WeatherContext';
+import { useWeatherPolling } from '../hooks/useWeatherPolling';
+import '../styles/WeatherDashboard.css';
+
+const WeatherDashboardContent = () => {
+  const { state } = useWeather();
+  useWeatherPolling();
+
+  return (
+    <div className="weather-dashboard">
+      <div className="dashboard-container">
+        <header className="dashboard-header">
+          <h1 className="dashboard-title">Weather Dashboard</h1>
+          <p className="dashboard-subtitle">
+            Get real-time weather updates for any city around the world
+          </p>
+        </header>
+
+        <SearchInput />
+        <ErrorDisplay />
+        
+        {state.isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <WeatherDisplay />
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <WeatherProvider>
+      <WeatherDashboardContent />
+    </WeatherProvider>
   );
 };
 
