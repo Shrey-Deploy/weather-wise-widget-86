@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useWeather } from '../context/WeatherContext';
-import { fetchWeatherData } from '../services/weatherApi';
+import { fetchWeatherData, fetchForecastData } from '../services/weatherApi';
 
 export const useWeatherPolling = () => {
   const { state, dispatch } = useWeather();
@@ -12,9 +12,15 @@ export const useWeatherPolling = () => {
       if (!state.lastSearchedCity || state.isLoading) return;
 
       try {
+        // Update current weather
         const weatherData = await fetchWeatherData(state.lastSearchedCity);
         dispatch({ type: 'SET_WEATHER', payload: weatherData });
-        console.log('Weather data updated via polling');
+        
+        // Update forecast data
+        const forecastData = await fetchForecastData(state.lastSearchedCity);
+        dispatch({ type: 'SET_FORECAST', payload: forecastData });
+        
+        console.log('Weather and forecast data updated via polling');
       } catch (error) {
         console.error('Polling error:', error);
         // Don't show error to user for polling failures to avoid interrupting UX

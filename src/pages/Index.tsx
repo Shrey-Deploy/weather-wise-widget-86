@@ -3,6 +3,7 @@ import React from 'react';
 import { WeatherProvider } from '../context/WeatherContext';
 import SearchInput from '../components/SearchInput';
 import WeatherDisplay from '../components/WeatherDisplay';
+import ForecastDisplay from '../components/ForecastDisplay';
 import ErrorDisplay from '../components/ErrorDisplay';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useWeather } from '../context/WeatherContext';
@@ -29,7 +30,10 @@ const WeatherDashboardContent = () => {
         {state.isLoading ? (
           <LoadingSpinner />
         ) : (
-          <WeatherDisplay />
+          <>
+            <WeatherDisplay />
+            <ForecastDisplay />
+          </>
         )}
       </div>
     </div>

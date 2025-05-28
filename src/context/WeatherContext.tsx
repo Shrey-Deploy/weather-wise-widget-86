@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { ForecastDay } from '../services/weatherApi';
 
 export interface WeatherData {
   location: string;
@@ -14,7 +15,9 @@ export interface WeatherData {
 
 interface WeatherState {
   currentWeather: WeatherData | null;
+  forecast: ForecastDay[] | null;
   isLoading: boolean;
+  isForecastLoading: boolean;
   error: string | null;
   unit: 'celsius' | 'fahrenheit';
   lastSearchedCity: string | null;
@@ -22,14 +25,18 @@ interface WeatherState {
 
 type WeatherAction =
   | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_FORECAST_LOADING'; payload: boolean }
   | { type: 'SET_WEATHER'; payload: WeatherData }
+  | { type: 'SET_FORECAST'; payload: ForecastDay[] }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_UNIT'; payload: 'celsius' | 'fahrenheit' }
   | { type: 'SET_LAST_SEARCHED_CITY'; payload: string };
 
 const initialState: WeatherState = {
   currentWeather: null,
+  forecast: null,
   isLoading: false,
+  isForecastLoading: false,
   error: null,
   unit: 'celsius',
   lastSearchedCity: localStorage.getItem('lastSearchedCity'),
@@ -39,10 +46,14 @@ const weatherReducer = (state: WeatherState, action: WeatherAction): WeatherStat
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
+    case 'SET_FORECAST_LOADING':
+      return { ...state, isForecastLoading: action.payload };
     case 'SET_WEATHER':
       return { ...state, currentWeather: action.payload, error: null };
+    case 'SET_FORECAST':
+      return { ...state, forecast: action.payload };
     case 'SET_ERROR':
-      return { ...state, error: action.payload, isLoading: false };
+      return { ...state, error: action.payload, isLoading: false, isForecastLoading: false };
     case 'SET_UNIT':
       return { ...state, unit: action.payload };
     case 'SET_LAST_SEARCHED_CITY':

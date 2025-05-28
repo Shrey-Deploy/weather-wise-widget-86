@@ -1,44 +1,38 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useWeather } from '../context/WeatherContext';
-import { fetchWeatherData } from '../services/weatherApi';
+import { fetchWeatherData, fetchForecastData } from '../services/weatherApi';
 
 const SearchInput = () => {
   const [query, setQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const { state, dispatch } = useWeather();
 
-  const handleSearch = async (cityName: string) => {
-    if (!cityName.trim()) return;
-    
-    setIsSearching(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
     dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_FORECAST_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
 
     try {
-      const weatherData = await fetchWeatherData(cityName);
+      // Fetch current weather
+      const weatherData = await fetchWeatherData(query.trim());
       dispatch({ type: 'SET_WEATHER', payload: weatherData });
-      dispatch({ type: 'SET_LAST_SEARCHED_CITY', payload: cityName });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'An error occurred' });
-    } finally {
+      dispatch({ type: 'SET_LAST_SEARCHED_CITY', payload: query.trim() });
       dispatch({ type: 'SET_LOADING', payload: false });
-      setIsSearching(false);
+      
+      // Fetch forecast data
+      const forecastData = await fetchForecastData(query.trim());
+      dispatch({ type: 'SET_FORECAST', payload: forecastData });
+      dispatch({ type: 'SET_FORECAST_LOADING', payload: false });
+      
+      setQuery('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSearch(query);
-  };
-
-  // Load last searched city on component mount
-  useEffect(() => {
-    if (state.lastSearchedCity && !state.currentWeather) {
-      setQuery(state.lastSearchedCity);
-      handleSearch(state.lastSearchedCity);
-    }
-  }, []);
 
   return (
     <div className="search-container">
@@ -48,20 +42,21 @@ const SearchInput = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for a city..."
+            placeholder="Enter city name..."
             className="search-input"
-            disabled={isSearching}
+            disabled={state.isLoading}
           />
           <button 
             type="submit" 
-            disabled={isSearching || !query.trim()}
             className="search-button"
+            disabled={state.isLoading || !query.trim()}
           >
-            {isSearching ? (
+            {state.isLoading ? (
               <div className="spinner"></div>
             ) : (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+                <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2"/>
               </svg>
             )}
           </button>
